@@ -6,7 +6,8 @@ from daqhats import hat_list, HatIDs, mcc118, mcc134, HatError, TcTypes, mcc152,
 import os.path, socket, threading, os, sys, select
 import numpy as arr
 import struct
-import json
+import json  
+
 
 
 HOST = '169.254.98.13' # The remote host - windows machine running the LabVIEW Server
@@ -454,7 +455,7 @@ def Send_Data():
     RefFlow_Data = TruncAndFillT(flowRate)
     ExVPos_Data = TruncAndFillExV(ExVCurrentPosition)
     PropValve_Data = TruncAndFillT(ValvePercentage)
-    CompThrottle_Data = TruncAndFillExV(CompressorThrottle)
+    CompThrottle_Data = TruncAndFillExV(CompSpeedPercent)
    
     
     conn.send(b'P0')
@@ -525,11 +526,11 @@ while 1:
         RecieveSettings()
         end = time.time()
         RecievingTime = end - start
-        if (AutoSamples == 0): #only need to do this if first run or switching from manual
-            readConfig()
-            print('Getting Ready...')
-            print('') 
-            print('Config Read')
+       # if (AutoSamples == 0): #only need to do this if first run or switching from manual
+        #    readConfig()
+        #    print('Getting Ready...')
+        #    print('') 
+        #    print('Config Read')
         start = time.time()
         Get_Sensor_Variables()
         end = time.time()
@@ -554,7 +555,7 @@ while 1:
            
         # Display the updated samples per channel count
         AutoSamples += 1
-        PV_Valve, ExV_Pos, Comp_Speed = ValvePercentage, ExVPositionPercent, CompSpeedPercent
+        PV_Valve, ExV_Pos, Comp_Speed = ValvePercentage, ExVPosition, CompSpeedPercent
         t = f"""
         {'-'*40}
         #Recieving Time:     {RecievingTime}
@@ -572,7 +573,10 @@ while 1:
         # Target Condesing Temp:    {targetT}  C    - Actual Temp    :{'{:12.1f}'.format(OutletWaterT)} C
         # Target Flowrate: {'{:12.3f}'.format(targetF)} Lpm  - Actual Flowrate:{'{:12.3f}'.format(flowRate)} Lpm
         # Target Pressure:         {targetP} psia - Actual Pressure:{'{:12.1f}'.format(ExVP)} psia
-        # Iteration Time:      {'{:12.4f}'.format(iterationTime)}
+        # PV Position:         {PV_Valve}%
+        # ExVPosition:         {'{:12.1f}'.format(ExV_Pos)}%
+        # Compressor Throttle: {Comp_Speed}%
+        # Iteration Time:      {'{:12.4f}'.format(iterationTime)} 
         # Iterations : {AutoSamples}
         {'-'*40}
         """
@@ -614,7 +618,7 @@ while 1:
         {'-'*40}
         # Manual Mode
         # PV Position:         {PV_Valve}%
-        # ExVPosition:         {ExV_Pos}%
+        # ExVPosition:         {'{:12.1f}'.format(ExV_Pos)}%
         # Compressor Throttle: {Comp_Speed}%
         # Iteration Time:      {'{:12.4f}'.format(iterationTime)}
         # Iterations: {manualSamples}
